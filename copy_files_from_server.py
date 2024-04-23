@@ -5,9 +5,13 @@ import time
 
 ################ To run ################
 # conda activate base
-# cd C:\Users\lesliec\code\EEG_analysis
+# cd C:\Users\lesliec\code\EEG_NPX_analysis
 # python copy_files_from_server.py
 ########################################
+
+## Set params ##
+copy_LFP = False
+
 
 def copy_sorted_exp_from_server(experiment_dir, destination_folder):
     '''
@@ -64,13 +68,23 @@ def copy_sorted_exp_from_server(experiment_dir, destination_folder):
         new_probe_folderi = os.path.join(new_exp_folder, folderi)
         if not os.path.exists(new_probe_folderi):
             os.mkdir(new_probe_folderi)
-        copytree(
-            probe_folderi,
-            new_probe_folderi,
-            ignore = ignore_patterns('events', '*100.0', 'sample_*', 'timestamps.npy'),
-            copy_function = copy2,
-            dirs_exist_ok = True
-        )
+
+        if copy_LFP:
+            copytree(
+                probe_folderi,
+                new_probe_folderi,
+                ignore = ignore_patterns('events', '*100.0', 'sample_*', 'timestamps.npy'),
+                copy_function = copy2,
+                dirs_exist_ok = True
+            )
+        else:
+            copytree(
+                probe_folderi,
+                new_probe_folderi,
+                ignore = ignore_patterns('events', '*100.0', '*100.1', 'sample_*', 'timestamps.npy'),
+                copy_function = copy2,
+                dirs_exist_ok = True
+            )
 
         ## Create Neuropix-PXI-100.0 folder ##
         cont_folder = glob(probe_folderi + '\continuous', recursive=True)[0]
@@ -85,6 +99,18 @@ def copy_sorted_exp_from_server(experiment_dir, destination_folder):
         ## Create the empty continuous file ##
         with open(os.path.join(new_AP_folder, 'continuous.dat'), 'w') as f:
             f.write('')
+
+        if not copy_LFP:
+            ## Create LFP (Neuropix-PXI-100.1) folder ##
+            LFP_folder = glob(cont_folder + '\*100.1', recursive=True)[0]
+            new_LFP_folder = os.path.join(new_cont_folder, os.path.basename(LFP_folder))
+            if not os.path.exists(new_LFP_folder):
+                os.mkdir(new_LFP_folder)
+            ## Copy the master timestamps file ##
+            copy2(os.path.join(LFP_folder, 'timestamps_master_clock.npy'), new_LFP_folder)
+            ## Create the empty continuous file ##
+            with open(os.path.join(new_LFP_folder, 'continuous.dat'), 'w') as f:
+                f.write('')
 
     return
 
@@ -126,10 +152,46 @@ experiments_to_copy = [
     # r'P:\mouse676727\urethane_2023-05-12_11-35-38',
     # r'R:\GAT_mice\mouse672785\EEGNPXspont_estim_2023-07-05_12-39-59',
     # r'R:\GAT_mice\mouse672789\EEGNPXspont_estim_2023-07-13_13-28-01',
-    r'P:\mouse678912\spont_aw_psi_2023-06-22_11-42-00',
-    r'P:\mouse678912\urethane_2023-06-23_11-08-17',
-    r'P:\mouse678913\spont_aw_psi_2023-06-29_12-49-40',
-    r'P:\mouse678913\urethane_2023-06-30_10-56-33',
+    # r'P:\mouse678912\spont_aw_psi_2023-06-22_11-42-00',
+    # r'P:\mouse678912\urethane_2023-06-23_11-08-17',
+    # r'P:\mouse678913\spont_aw_psi_2023-06-29_12-49-40',
+    # r'P:\mouse678913\urethane_2023-06-30_10-56-33',
+    # r'P:\mouse689242\aw_iso_2023-07-20_10-52-57',
+    # r'P:\mouse689242\aw_psi_2023-07-19_10-29-49',
+    # r'P:\mouse689242\urethane_2023-07-21_12-32-25',
+    # r'P:\mouse689239\aw_iso_2023-08-09_11-15-42',
+    # r'P:\mouse689239\aw_psi_2023-08-10_11-26-36',
+    # r'P:\mouse689239\urethane_2023-08-11_11-33-46',
+    # r'P:\mouse689240\aw_iso_2023-08-18_10-03-39',
+    # r'P:\mouse689240\aw_psi_2023-08-17_09-46-39',
+    # r'P:\mouse692644\aw_iso_2023-09-06_11-27-02',
+    # r'P:\mouse692644\aw_psi_2023-09-07_11-51-57',
+    # r'P:\mouse692644\urethane_2023-09-08_11-15-18',
+    # r'P:\mouse688277\aw_iso_2023-09-21_10-41-15',
+    # r'P:\mouse688277\urethane_2023-09-22_12-04-23',
+    # r'P:\mouse703062\aw_iso_2023-10-19_13-13-25',
+    # r'P:\mouse703062\urethane_2023-10-20_12-00-46',
+    # r'P:\mouse703063\aw_iso_2023-11-16_11-16-30',
+    # r'P:\mouse703063\aw_psi_2023-11-15_11-08-12',
+    # r'P:\mouse703063\urethane_2023-11-17_12-47-18',
+    # r'P:\mouse703064\aw_iso_2023-11-29_11-23-30',
+    # r'P:\mouse703064\aw_psi_2023-11-30_12-06-43',
+    # r'P:\mouse703064\urethane_2023-12-01_11-20-15',
+    # r'P:\mouse703065\aw_iso_2023-12-07_10-23-39',
+    # r'P:\mouse703065\aw_psi_2023-12-06_11-04-39',
+    # r'P:\mouse703065\urethane_2023-12-08_11-57-44', # has no master spiketimes for any probe, try again later
+    # r'P:\mouse709401\aw_iso_2023-12-13_09-55-07', # COPY LATER no histology
+    # r'P:\mouse709401\aw_psi_2023-12-14_11-17-30', # COPY LATER no histology
+    # r'P:\mouse709401\urethane_2023-12-15_11-03-00', # COPY LATER no histology
+    # r'P:\mouse709400\aw_iso_2024-01-31_11-35-57',
+    # r'P:\mouse709400\aw_ket_2024-02-01_11-12-34',
+    # r'P:\mouse709400\urethane_2024-02-02_11-52-38',
+    # r'P:\mouse709402\aw_iso_2024-02-15_10-26-16',
+    # r'P:\mouse709402\aw_ket_2024-02-14_12-32-14',
+    # r'P:\mouse709402\urethane_2024-02-16_11-15-43',
+    # r'P:\mouse720762\aw_iso_2024-02-21_10-32-01',
+    # r'P:\mouse720762\aw_ket_2024-02-22_10-43-35',
+    # r'P:\mouse720762\urethane_2024-02-23_11-35-21',
 ]
 destination = r'F:\psi_exp' # r'F:\psi_exp', r'E:\GAT1_EEG_pilot'
 
