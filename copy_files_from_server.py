@@ -179,10 +179,10 @@ experiments_to_copy = [
     # r'P:\mouse703064\urethane_2023-12-01_11-20-15',
     # r'P:\mouse703065\aw_iso_2023-12-07_10-23-39',
     # r'P:\mouse703065\aw_psi_2023-12-06_11-04-39',
-    # r'P:\mouse703065\urethane_2023-12-08_11-57-44', # has no master spiketimes for any probe, try again later
-    # r'P:\mouse709401\aw_iso_2023-12-13_09-55-07', # COPY LATER no histology
-    # r'P:\mouse709401\aw_psi_2023-12-14_11-17-30', # COPY LATER no histology
-    # r'P:\mouse709401\urethane_2023-12-15_11-03-00', # COPY LATER no histology
+    # r'P:\mouse703065\urethane_2023-12-08_11-57-44',
+    # r'P:\mouse709401\aw_iso_2023-12-13_09-55-07',
+    # r'P:\mouse709401\aw_psi_2023-12-14_11-17-30',
+    # r'P:\mouse709401\urethane_2023-12-15_11-03-00',
     # r'P:\mouse709400\aw_iso_2024-01-31_11-35-57',
     # r'P:\mouse709400\aw_ket_2024-02-01_11-12-34',
     # r'P:\mouse709400\urethane_2024-02-02_11-52-38',
