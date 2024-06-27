@@ -192,6 +192,15 @@ experiments_to_copy = [
     # r'P:\mouse720762\aw_iso_2024-02-21_10-32-01',
     # r'P:\mouse720762\aw_ket_2024-02-22_10-43-35',
     # r'P:\mouse720762\urethane_2024-02-23_11-35-21',
+    r'P:\mouse724057\aw_sal_2024-04-03_10-32-05',
+    r'P:\mouse724057\aw_psi_2024-04-04_10-35-18',
+    r'P:\mouse730913\aw_sal_2024-04-24_10-43-30',
+    r'P:\mouse730913\aw_ket_2024-04-26_10-11-34',
+    r'P:\mouse730911\aw_sal_2024-05-01_11-57-16',
+    r'P:\mouse730911\aw_ket_2024-05-02_10-41-41',
+    r'P:\mouse735049\aw_sal_2024-05-22_11-05-25',
+    r'P:\mouse735049\aw_ket_2024-05-23_11-42-08',
+    r'P:\mouse709399\aw_iso_2024-01-24_10-26-14',
 ]
 destination = r'F:\psi_exp' # r'F:\psi_exp', r'E:\GAT1_EEG_pilot'
 
