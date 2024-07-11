@@ -3,8 +3,6 @@ import os
 import numpy as np
 import pandas as pd
 
-from allensdk.core.mouse_connectivity_cache import MouseConnectivityCache
-
 from brainrender.scene import Scene
 from brainrender.actors import Point
 from brainrender import settings
@@ -15,6 +13,14 @@ show_elecs = True
 
 ## Set brainrender settings ##
 settings.SHOW_AXES = False
+
+## Create the scene with correct atlas ##
+scene = Scene(
+    atlas_name="allen_mouse_25um", inset=False, title='EEG array',
+    screenshots_folder=r'C:\Users\lesliec\OneDrive - Allen Institute\data\plots\brainrender_figs',
+)
+ccf_atlas = scene.atlas
+annot = ccf_atlas.annotation
 
 ## EEG information ##
 channel_list = np.arange(0, 30, dtype=int)
@@ -33,11 +39,6 @@ channel_AP = np.array([
     -0.48, -1.96, -1.96, -1.96, -3.04, -3.04, -3.04, -4.14, -4.14, -4.14
 ])
 coords = pd.DataFrame({'AP': channel_AP, 'ML': channel_ML})
-
-## CCF and annotated volume ##
-mcc = MouseConnectivityCache(resolution=25)
-annot, annot_info = mcc.get_annotation_volume()
-structure_tree = mcc.get_structure_tree()
 
 ## Finding bregma in CCF coordinates ##
 mm_slice = 0.025 # mm, we are using CCF with 25 um resolution
@@ -65,13 +66,12 @@ coords['ML_pixel_ind'] = (ML_zero_ind + (coords['ML'] / mm_slice)).astype(int) #
 new_ML_pix_inds = np.zeros(len(channel_list))
 new_DV_pix_inds = np.zeros(len(channel_list))
 for AP_pix_ind, slice_group in coords.groupby(['AP_pixel_ind']):
-
     # get surface of brain
-    edge_ind = np.nonzero(annot[int(AP_pix_ind), int(np.shape(annot)[1]/2), :])[0][0]
+    edge_ind = np.nonzero(annot[AP_pix_ind[0], int(np.shape(annot)[1]/2), :])[0][0]
     surfaceML = np.arange(edge_ind, np.shape(annot)[2] - edge_ind)
     surfaceDV = np.zeros_like(surfaceML)
     for k, surML in enumerate(surfaceML):
-        surfaceDV[k] = np.nonzero(annot[int(AP_pix_ind), :, int(surML)])[0][0]
+        surfaceDV[k] = np.nonzero(annot[AP_pix_ind[0], :, int(surML)])[0][0]
     surface_distance = np.concatenate(([0], np.cumsum(np.sqrt(np.diff(surfaceML)**2 + np.diff(surfaceDV)**2))))
 
     # Left side
@@ -106,44 +106,34 @@ coords['DV_pixel_ind'] = new_DV_pix_inds.astype(int)
 
 ## Use electrode CCF coords to find annotated brain region ##
 # create empty lists to hold info (will add it to coords dataframe after loop)
-structure_id = []
 structure_name = []
-parent_id = []
 parent_name = []
-structure_parent_acronym = []
 
 # for loop through the coords dataframe
 for indi, row in coords.iterrows():
     # choose first non-zero value in the annotated array at the AP, ML pixel inds
     non_zero_DV = np.nonzero(annot[int(row.AP_pixel_ind),:,int(row.ML_pixel_ind)])[0][0]
-    struct_id_temp = annot[int(row.AP_pixel_ind), non_zero_DV, int(row.ML_pixel_ind)]
-    # append structure id, name, parent info to empty lists
-    structure_id.append(struct_id_temp)
-    structure_name.append(structure_tree.get_structures_by_id([struct_id_temp])[0]['name'])
-    parent_id.append(structure_tree.parents([struct_id_temp])[0]['id'])
-    parent_name.append(structure_tree.parents([struct_id_temp])[0]['name'])
-    structure_parent_acronym.append(structure_tree.parents([struct_id_temp])[0]['acronym'])
+    struct_acronym = ccf_atlas.structure_from_coords(
+        [int(row.AP_pixel_ind), non_zero_DV, int(row.ML_pixel_ind)], as_acronym=True
+        )
+    parent_acronym = ccf_atlas.get_structure_ancestors(struct_acronym)[-1]
+    # append structure and parent info to empty lists
+    structure_name.append(struct_acronym)
+    parent_name.append(parent_acronym)
 
 # add lists created to original dataframe
-coords['structure_id'] = structure_id
 coords['structure_name'] = structure_name
-coords['parent_id'] = parent_id
 coords['parent_name'] = parent_name
 
 ## Prep electrode and structure info for plotting with BrainRender ##
-electrode_coords = np.array([coords.AP_pixel_ind.to_numpy(),
-                             coords.DV_pixel_ind.to_numpy(),
-                             coords.ML_pixel_ind.to_numpy()
-                            ])
-structure_list = list(set(structure_parent_acronym))
+electrode_coords = np.array([
+    coords.AP_pixel_ind.to_numpy(),
+    coords.DV_pixel_ind.to_numpy(),
+    coords.ML_pixel_ind.to_numpy()
+    ])
+structure_list = list(set(parent_name))
 
-## Create the scene, populate and preprare for rendering ##
-scene = Scene(
-    inset=False, title='EEG array',
-    screenshots_folder=r'C:\Users\lesliec\OneDrive - Allen Institute\data\plots\brainrender_figs',
-)
-
-## Add brain regions under electrodes ##
+## Add brain regions under electrodes to Scene ##
 for area in structure_list:
     scene.add_brain_region(area) # , add_labels=True)
 
@@ -176,7 +166,10 @@ for screwi in screw_coords:
 # scene.add_sphere_at_point(electrode_coords[:,4]*25, radius=250, color='k')
 
 ## Render ##
-scene.render(interactive=False, camera='top', zoom=0.95)
+scene.render()
+# scene.render(interactive=True, camera='top', zoom=0.95)
+# scene.render(interactive=False, camera='top', zoom=0.95)
+
 ## Save screenshot ##
 # scene.screenshot(name=r'EEG_chs_crans', scale=3)
 # scene.close()
