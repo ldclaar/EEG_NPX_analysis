@@ -13,26 +13,28 @@ from brainrender import settings
 
 
 #### Set plotting parameters ####
-probes_csv_file = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\data\HMpaper_SR_07292024_probescoords.csv") # set the directory where 'mouseXXXXXX' folders exist
+probes_csv_file = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\data\BSpaperIR_08152024_probescoords.csv")
 plot_dir = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\data\plots\brainrender_figs")
 pixel_scale = 25 # scale from 25 um CCF to brainrender coords
-screenshot_name = r"HMpaper_SR_08122024_sag_probes_scaledots"
+screenshot_name = r"BSpaper_08202024_probes_top"
 show_regions = True
-regions = ['AV', 'CL', 'MD', 'PO', 'RT', 'VAL', 'VPL', 'VPM', 'VM']
-br_title = 'HMpaper_SR_07292024: SM-TH probes'
+br_title = 'BrainStim experiments: all probes (08202024)'
 show_legend = False
-show_scalebar = True
+show_scalebar = False
 
 region_colors = {
-    'AV': 'HotPink',
-    'CL': 'Red',
-    'MD': 'Orange',
-    'PO': 'Gold',
-    'RT': 'Sienna',
-    'VAL': 'Purple',
-    'VPL': 'Blue',
-    'VPM': 'Cyan',
-    'VM': 'Green',
+    'VISp': 'darkgreen',
+    'VISpm': 'springgreen', # 'seagreen'
+    'VISam': 'springgreen', # 'mediumaquamarine',
+    'VISa': 'springgreen',
+    'VISrl': 'springgreen', # 'mediumaquamarine',
+    'VISal': 'springgreen',
+    'VISl': 'springgreen', # 'mediumaquamarine',
+    # 'VISli': 'springgreen',
+    # 'VISpl': 'seagreen',
+    'CA1': 'orange',
+    'CA3': 'gold',
+    'DG': 'tomato',
 }
 
 ## Set brainrender settings ##
@@ -48,9 +50,9 @@ MLdist = scene.atlas.annotation.shape[-1]
 ## Add brain regions ##
 # Scene.add_brain_region(regions, alpha, color, silhouette, hemisphere, force)
 if show_regions:
-    for regi in regions:
+    for regi, regcol in region_colors.items():
         scene.add_brain_region(
-            regi, alpha=0.25, color=region_colors[regi], hemisphere='left'
+            regi, alpha=0.25, color=regcol, hemisphere='left'
         )
 ## Add legend circles ##
 if show_legend:
@@ -60,7 +62,7 @@ if show_legend:
     # temp = scene.add(Point((4000, 3000 + ((ii+1) * 150), 7000), radius=50, color='Gray'))
 ## Add scale bar ##
 if show_scalebar:
-    scene.add(Line(np.array([[5000,5000,6000], [4000,5000,6000]]), color='k', linewidth=5, name='scale bar'))
+    scene.add(Line(np.array([[4000,5500,7000], [3000,5500,7000]]), color='k', linewidth=5, name='scale bar'))
     # The scale bar is 1 mm, original units are um ##
     # scene.add(ruler(np.array([5000,5000,6000]), np.array([4000,5000,6000]), unit_scale=0.001, units="mm"))
 
@@ -74,16 +76,31 @@ for indi, probe_info in all_probes_df.iterrows():
     ])
     coords[:,-1] = MLdist - coords[:,-1] # mirror ML
     BR_coords = coords * pixel_scale # plot um in brainrender space
-    scene.add(Line(BR_coords, color='k', alpha=0.9, linewidth=4, name=probe_info.probe))
-    scene.add(Point(BR_coords[0], radius=40, color='k', alpha=0.9))
+    if probe_info.close_to_stim:
+        prcol = 'k'
+    else:
+        prcol = 'r'
+    scene.add(Line(BR_coords, color=prcol, alpha=0.9, linewidth=4, name=probe_info.probe))
+    # scene.add(Point(BR_coords[0], radius=40, color='k', alpha=0.9)) # adds a sphere to the end of the probe-CK
 # scene.add(ruler(BR_coords[0], BR_coords[1], unit_scale=0.001, units="mm")) # confirms unit scale
 
 ## Slice the brain ##
 # scene.slice("sagittal") # this slices correctly, but shows the right hemisphere only
-scene.slice("sagittal", invert=True) # this slices correctly!
+# scene.slice("sagittal", invert=True) # this slices correctly!
+
+## Custom camera view ##
+# ccamera = {
+#     "pos": (1000, 1000, 0), # (8777, 1878, -44032),
+#     "viewup": (0, -1, 0),
+#     "clipping_range": (24852, 54844),
+#     "focal_point": (7718, 4290, -3507),
+#     "distance": 40610,
+# }
 
 ## Display the figure. ##
-scene.render(interactive=False, camera='sagittal', zoom=2)
+# scene.render(interactive=False, camera='sagittal', zoom=2)
+scene.render(interactive=False, camera='top', zoom=1)
+# scene.render(interactive=True, camera=ccamera, zoom=1.2)
 # camera options: 'top'
 # interactive=False to save a screenshot
 # scene.render(interactive=False, camera='top', zoom=0.95)
