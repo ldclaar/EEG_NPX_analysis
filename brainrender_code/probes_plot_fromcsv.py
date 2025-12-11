@@ -13,7 +13,7 @@ from brainrender import settings
 
 
 #### Set plotting parameters ####
-probes_csv_file = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\data\HMpaper_SR_07292024_probescoords.csv") # set the directory where 'mouseXXXXXX' folders exist
+probes_csv_file = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\data\HMpaper_SR_07292024_probescoords.csv")
 plot_dir = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\data\plots\brainrender_figs")
 pixel_scale = 25 # scale from 25 um CCF to brainrender coords
 screenshot_name = r"HMpaper_SR_08122024_sag_probes_scaledots"

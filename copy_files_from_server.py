@@ -201,7 +201,7 @@ experiments_to_copy = [
     # r'P:\mouse735049\aw_sal_2024-05-22_11-05-25',
     # r'P:\mouse735049\aw_ket_2024-05-23_11-42-08',
     # r'P:\mouse709399\aw_iso_2024-01-24_10-26-14',
-    r'P:\mouse655955\estim_2022-12-13_10-05-19',
+    # r'P:\mouse655955\estim_2022-12-13_10-05-19',
 ]
 destination = r'F:\psi_exp' # r'F:\psi_exp', r'E:\GAT1_EEG_pilot'
 

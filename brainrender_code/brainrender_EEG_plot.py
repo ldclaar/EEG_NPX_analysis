@@ -167,6 +167,7 @@ if show_elecs:
 screw_coords = np.array([[-5.6, 0.0, -1.8], [-5.6, 0.0, 1.8]])
 for screwi in screw_coords:
     br_inds = ((CCF_bregma - (screwi / mm_slice)) * 25).astype(int)
+    print(br_inds)
     screw_actor = Point(pos=br_inds, color='dimgray', radius=400)
     scene.add(screw_actor)
 

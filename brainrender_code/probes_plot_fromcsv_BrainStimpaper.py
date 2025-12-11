@@ -13,28 +13,20 @@ from brainrender import settings
 
 
 #### Set plotting parameters ####
-probes_csv_file = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\data\BSpaperIR_08152024_probescoords.csv")
-plot_dir = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\data\plots\brainrender_figs")
+subject_csv_file = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\Shared Documents - Lab 328\Projects\CL-CM stim\subject_metadata.csv")
+probes_csv_file = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\Shared Documents - Lab 328\Projects\CL-CM stim\CLstimpilot_03122025_probescoords.csv")
+plot_dir = Path(r"C:\Users\lesliec\OneDrive - Allen Institute\Shared Documents - Lab 328\Projects\CL-CM stim\pictures and plots")
 pixel_scale = 25 # scale from 25 um CCF to brainrender coords
-screenshot_name = r"BSpaper_08202024_probes_top"
+screenshot_name = r"CLstimpilot_03122025_probes_top"
 show_regions = True
-br_title = 'BrainStim experiments: all probes (08202024)'
+br_title = 'CL stim experiments: all probes (03/2025)'
 show_legend = False
 show_scalebar = False
+show_stim = True
 
 region_colors = {
-    'VISp': 'darkgreen',
-    'VISpm': 'springgreen', # 'seagreen'
-    'VISam': 'springgreen', # 'mediumaquamarine',
-    'VISa': 'springgreen',
-    'VISrl': 'springgreen', # 'mediumaquamarine',
-    'VISal': 'springgreen',
-    'VISl': 'springgreen', # 'mediumaquamarine',
-    # 'VISli': 'springgreen',
-    # 'VISpl': 'seagreen',
-    'CA1': 'orange',
-    'CA3': 'gold',
-    'DG': 'tomato',
+    'CL': 'darkgreen',
+    'CM': 'orange',
 }
 
 ## Set brainrender settings ##
@@ -83,6 +75,26 @@ for indi, probe_info in all_probes_df.iterrows():
     scene.add(Line(BR_coords, color=prcol, alpha=0.9, linewidth=4, name=probe_info.probe))
     # scene.add(Point(BR_coords[0], radius=40, color='k', alpha=0.9)) # adds a sphere to the end of the probe-CK
 # scene.add(ruler(BR_coords[0], BR_coords[1], unit_scale=0.001, units="mm")) # confirms unit scale
+
+## Add stim tips circles ##
+if show_stim:
+    all_subjects_df = pd.read_csv(subject_csv_file)
+    for indi, sub_info in all_subjects_df.iterrows():
+        tip_coords = np.array([sub_info.stim_tip_AP, sub_info.stim_tip_DV, sub_info.stim_tip_ML])
+        surf_coords = np.array([sub_info.stim_surf_AP, sub_info.stim_surf_DV, sub_info.stim_surf_ML])
+        ## Calculate the supposed position of the 2nd tip ##
+        stim_elec_vec = tip_coords - surf_coords
+        norm = np.linalg.norm(stim_elec_vec)
+        direction = stim_elec_vec / norm # unit vector
+        other_tip_coords = (tip_coords - (0.3/0.025) * direction).astype(int)
+        ## transform and plot them ##
+        tip_coords[:,-1] = MLdist - tip_coords[:,-1] # mirror ML
+        T1_coords = tip_coords * pixel_scale # plot um in brainrender space
+        scene.add(Point(T1_coords, radius=50, color='b'))
+
+        other_tip_coords[:,-1] = MLdist - other_tip_coords[:,-1] # mirror ML
+        T2_coords = other_tip_coords * pixel_scale # plot um in brainrender space
+        scene.add(Point(T2_coords, radius=50, color='b'))
 
 ## Slice the brain ##
 # scene.slice("sagittal") # this slices correctly, but shows the right hemisphere only
